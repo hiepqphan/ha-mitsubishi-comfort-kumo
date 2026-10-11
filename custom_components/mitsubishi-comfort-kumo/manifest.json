@@ -1,5 +1,5 @@
 {
-  "domain": "ha_mitsubishi_comfort_kumo",
+  "domain": "mitsubishi_comfort_kumo",
   "name": "Mitsubishi Comfort",
   "version": "1.0.0",
   "codeowners": ["@hiepqphan"],
