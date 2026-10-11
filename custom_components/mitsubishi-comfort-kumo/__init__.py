@@ -18,8 +18,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     
     # Initialize your API kumo_ using username/password here
     kumo_client = KumoCloudClient(username, password)
-    mydata = kumo_client.login(username, password)
-    _LOGGER.debug(mydata)
+    kumo_client.login(username, password)
     await asyncio.sleep(3)
     kumo_client._load_first_site_id()
     await asyncio.sleep(3)

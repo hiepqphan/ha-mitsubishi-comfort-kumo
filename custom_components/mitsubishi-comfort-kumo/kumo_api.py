@@ -251,7 +251,8 @@ class KumoCloudClient:
     def _load_first_site_id(self) -> str:
         sites = self.get_sites()
         if len(sites) > 0:
-            return sites[0].get("id")
+            self.site_id = sites[0].get("id")
+            return self.site_id
         return None
 
     def _load_device_serials(self) -> dict[str, str]:
@@ -261,7 +262,8 @@ class KumoCloudClient:
             name = ENV_SERIAL_PREFIX + zone.get("name").replace(" ", "").upper()
             serial = zone.get("adapter").get("deviceSerial")
             result[name] = serial
-        return None if len(result) == 0 else result
+        self.device_serials = None if len(result) == 0 else result
+        return self.device_serials
 
     def _load_serials_from_env(self) -> dict[str, str]:
         """Load device serials from environment variables (KUMO_SERIAL_*)."""
