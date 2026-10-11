@@ -1,5 +1,5 @@
 from datetime import timedelta
-import logging
+import logging, time
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, Platform
@@ -20,7 +20,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     kumo_client = KumoCloudClient(username, password)
     mydata = kumo_client.login(username, password)
     _LOGGER.debug(mydata)
+    time.sleep(3)
     kumo_client._load_first_site_id()
+    time.sleep(3)
     kumo_client._load_device_serials()
 
     async def async_update_data():
