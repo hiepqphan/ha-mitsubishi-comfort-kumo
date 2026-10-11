@@ -1,7 +1,7 @@
 {
   "domain": "mitsubishi_comfort_kumo",
   "name": "Mitsubishi Comfort",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "codeowners": ["@hiepqphan"],
   "config_flow": true,
   "documentation": "",
