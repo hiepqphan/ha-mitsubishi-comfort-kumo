@@ -83,27 +83,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             return
 
         # Loop through every split ID and fire requests asynchronously in parallel
-        import asyncio
-        tasks = []
 
         for device_id in coordinator.data.keys():
             if target_mode:
-                tasks.append(kumo_client.send_device_command(device_id, {
+                await hass.async_add_executor_job(kumo_client.send_device_command, device_id, {
                     "operationMode": HA_TO_KUMO_MODE[target_mode]
-                }))
+                })
             if target_temp:
                 kumo_mode = coordinator.data[device_id].get("mode")
                 temperature_field = kumo_client.get_temperature_field(kumo_mode)
                 if temperature_field == None:
                     return
-                tasks.append(kumo_client.send_device_command(device_id, {
+                await hass.async_add_executor_job(kumo_client.send_device_command, device_id, {
                     temperature_field: target_temp
-                }))
+                })
 
-        # Run all cloud HTTP requests at the exact same time
-        if tasks:
-            await asyncio.gather(*tasks)
-            
         # Force a refresh so all UI cards update instantly
         await coordinator.async_request_refresh()
 
