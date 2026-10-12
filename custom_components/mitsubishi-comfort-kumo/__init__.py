@@ -17,8 +17,8 @@ PLATFORMS: list[Platform] = [Platform.CLIMATE]
 SET_ALL_MINISPLITS_SERVICE_NAME = "set_all_minisplits"
 SET_ALL_SERVICE_SCHEMA = vol.Schema(
     {
-        vol.Optional("mode"): vol.In([HVACMode.COOL, HVACMode.HEAT, HVACMode.OFF]),
-        vol.Optional(ATTR_TEMPERATURE): cv.positive_int,
+        vol.Optional("mode", "heat, cool, off"): vol.In([HVACMode.COOL, HVACMode.HEAT, HVACMode.OFF]),
+        vol.Optional(ATTR_TEMPERATURE, "in Celsius"): cv.positive_int,
     }
 )
 
@@ -92,6 +92,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 await hass.async_add_executor_job(kumo_client.send_device_command, device_id, {
                     "operationMode": HA_TO_KUMO_MODE[target_mode]
                 })
+            # This is takes raw input number, and Mitsubishi uses Celsius
             if target_temp:
                 kumo_mode = coordinator.data[device_id].get("mode")
                 temperature_field = kumo_client.get_temperature_field(kumo_mode)
