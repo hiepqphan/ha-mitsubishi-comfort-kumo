@@ -42,7 +42,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     master_unit_serial = entry.data[CONF_MASTER_UNIT_SERIAL]
     ignored_units_serials = entry.data[CONF_IGNORED_UNITS_SERIALS]
     
-    # Initialize your API kumo_ using username/password here
+    # Initialize your API using username/password here
     kumo_client = await hass.async_add_executor_job(
         KumoCloudClient, username, password, master_unit_serial, ignored_units_serials
     )
