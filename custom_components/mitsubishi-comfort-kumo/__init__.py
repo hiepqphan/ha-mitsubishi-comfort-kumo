@@ -47,7 +47,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     "name": device.get("name"),
                     "room_temp": device.get("adapter").get("roomTemp"),
                     "set_temp": _get_temperature(device),
-                    "mode": device.get("operationMode")
+                    "mode": device.get("adapter").get("operationMode")
                 }
             return result
         except Exception as err:
@@ -60,7 +60,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         _LOGGER,
         name=DOMAIN,
         update_method=async_update_data,
-        update_interval=timedelta(seconds=60),
+        update_interval=timedelta(seconds=10),
     )
 
     await coordinator.async_config_entry_first_refresh()
