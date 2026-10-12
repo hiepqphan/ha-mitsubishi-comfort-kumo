@@ -39,7 +39,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             if kumo_client.device_serials is not None and len(kumo_client.device_serials) > 0:
                 device_status = await hass.async_add_executor_job(
                     kumo_client.get_fresh_device_status,
-                    kumo_client.device_serials["KUMO_SERIAL_FAMILYROOM"].get("deviceSerial")
+                    kumo_client.device_serials["KUMO_SERIAL_FAMILYROOM"]
                 )
                 result["temperature"] = device_status.get("roomTemp")
             else:
