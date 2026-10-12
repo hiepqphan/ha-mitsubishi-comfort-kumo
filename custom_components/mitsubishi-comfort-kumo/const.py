@@ -3,6 +3,8 @@ from homeassistant.components.climate import HVACMode
 DOMAIN = "mitsubishi_comfort_kumo"
 CONF_USERNAME = "username"
 CONF_PASSWORD = "password"
+CONF_MASTER_UNIT_SERIAL = "master_unit_serial"
+CONF_IGNORED_UNITS_SERIALS = "ignored_units_serials"
 
 # Map Home Assistant HVAC modes to whatever your kumo_api expects
 HA_TO_KUMO_MODE = {

@@ -4,7 +4,7 @@ from homeassistant import config_entries
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 import homeassistant.helpers.config_validation as cv
 
-from .const import DOMAIN
+from .const import DOMAIN, CONF_IGNORED_UNITS_SERIALS, CONF_MASTER_UNIT_SERIAL
 from .kumo_api import KumoCloudClient
 
 _LOGGER = logging.getLogger(__name__)
@@ -42,6 +42,8 @@ class MyCloudDeviceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             {
                 vol.Required(CONF_USERNAME): cv.string,
                 vol.Required(CONF_PASSWORD): cv.string,
+                vol.Optional(CONF_MASTER_UNIT_SERIAL): cv.string,
+                vol.Optional(CONF_IGNORED_UNITS_SERIALS, "comma sep list"): cv.string
             }
         )
 

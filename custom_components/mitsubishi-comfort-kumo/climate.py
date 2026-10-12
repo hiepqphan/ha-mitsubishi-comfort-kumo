@@ -96,6 +96,17 @@ class MitsubishiMinisplit(CoordinatorEntity, ClimateEntity):
                 "operationMode": kumo_mode
             }
         )
+
+        # If updating master unit, change all other units (if not ignored)
+        if self.device_id == kumo_client.master_unit_serial:
+            for id, device in self.coordinator.data.items():
+                if id == self.device_id or id in kumo_client.ignored_unit_serials:
+                    continue
+                await self.hass.async_add_executor_job(
+                    kumo_client.send_device_command, id, {
+                        "operationMode": kumo_mode
+                    }
+                )
         
         # Force a background data refresh so the UI updates instantly
         await self.coordinator.async_request_refresh()
@@ -118,6 +129,17 @@ class MitsubishiMinisplit(CoordinatorEntity, ClimateEntity):
                 temperature_field: target_temp
             }
         )
+
+        # If updating master unit, change all other units (if not ignored)
+        if self.device_id == kumo_client.master_unit_serial:
+            for id, device in self.coordinator.data.items():
+                if id == self.device_id or id in kumo_client.ignored_unit_serials:
+                    continue
+                await self.hass.async_add_executor_job(
+                    kumo_client.send_device_command, id, {
+                        temperature_field: target_temp
+                    }
+                )
         
         # Force a background data refresh so the UI updates instantly
         await self.coordinator.async_request_refresh()

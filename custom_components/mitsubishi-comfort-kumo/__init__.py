@@ -39,10 +39,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up My Cloud Device from a config entry."""
     username = entry.data[CONF_USERNAME]
     password = entry.data[CONF_PASSWORD]
+    master_unit_serial = entry.data[CONF_MASTER_UNIT_SERIAL]
+    ignored_units_serials = entry.data[CONF_IGNORED_UNITS_SERIALS]
     
     # Initialize your API kumo_ using username/password here
     kumo_client = await hass.async_add_executor_job(
-        KumoCloudClient, username, password
+        KumoCloudClient, username, password, master_unit_serial, ignored_units_serials
     )
     await hass.async_add_executor_job(kumo_client.login_and_fetch_devices)
 
