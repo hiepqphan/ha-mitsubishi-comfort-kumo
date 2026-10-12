@@ -1,5 +1,5 @@
 from datetime import timedelta
-import logging, asyncio
+import logging, asyncio, traceback
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, Platform
@@ -40,6 +40,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             )
             return {"temperature": device_status.get("roomTemp")}
         except Exception as err:
+            _LOGGER.error("kumo failed here: %s", traceback.format_exc())
+            _LOGGER.error("kumo failed error: %s", err)
             raise UpdateFailed(f"Cloud communication error: {err}")
 
     coordinator = DataUpdateCoordinator(
