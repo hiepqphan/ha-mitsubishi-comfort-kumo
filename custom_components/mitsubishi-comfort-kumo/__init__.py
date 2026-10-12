@@ -23,7 +23,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await hass.async_add_executor_job(kumo_client.login)
     # kumo_client.login(username, password)
     await asyncio.sleep(3)
-    await hass.async_add_executor_joob(kumo_client._load_first_site_id)
+    await hass.async_add_executor_job(kumo_client._load_first_site_id)
     # kumo_client._load_first_site_id()
     await asyncio.sleep(3)
     await hass.async_add_executor_job(kumo_client._load_device_serials)
