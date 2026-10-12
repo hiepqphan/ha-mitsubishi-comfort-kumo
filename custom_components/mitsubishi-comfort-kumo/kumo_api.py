@@ -285,9 +285,9 @@ class KumoCloudClient:
 
     def _save_tokens(self) -> None:
         """Save tokens to file."""
-        # if self.tokens:
-        #     self.token_file.write_text(json.dumps(self.tokens.to_dict(), indent=2))
-        #     self.token_file.chmod(0o600)  # Restrict permissions
+        if self.tokens:
+            self.token_file.write_text(json.dumps(self.tokens.to_dict(), indent=2))
+            self.token_file.chmod(0o600)  # Restrict permissions
 
     def _get_auth_header(self) -> dict:
         """Get Authorization header with current access token."""

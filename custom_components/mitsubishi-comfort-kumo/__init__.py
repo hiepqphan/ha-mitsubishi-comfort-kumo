@@ -17,19 +17,27 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     password = entry.data[CONF_PASSWORD]
     
     # Initialize your API kumo_ using username/password here
-    kumo_client = KumoCloudClient(username, password)
-    kumo_client.login(username, password)
+    kumo_client = await hass.async_add_executor_job(
+        KumoCloudClient, username, password
+    )
+    await hass.async_add_executor_job(kumo_client.login)
+    # kumo_client.login(username, password)
     await asyncio.sleep(3)
-    kumo_client._load_first_site_id()
+    await hass.async_add_executor_joob(kumo_client._load_first_site_id)
+    # kumo_client._load_first_site_id()
     await asyncio.sleep(3)
-    kumo_client._load_device_serials()
+    await hass.async_add_executor_job(kumo_client._load_device_serials)
+    # kumo_client._load_device_serials()
 
     async def async_update_data():
         """Fetch data from cloud API endpoint."""
         try:
             # Replace with your actual cloud async fetch call
             # Refresh data read
-            device_status = kumo_client.get_fresh_device_status(kumo_client.device_serials[0].get("adapter").get("deviceSerial"))
+            device_status = await hass.async_add_executor_job(
+                kumo_client.get_fresh_device_status,
+                kumo_client.device_serials[0].get("adapter").get("deviceSerial")
+            )
             return {"temperature": device_status.get("roomTemp")}
         except Exception as err:
             raise UpdateFailed(f"Cloud communication error: {err}")
