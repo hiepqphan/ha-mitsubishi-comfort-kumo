@@ -33,8 +33,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     kumo_client = await hass.async_add_executor_job(
         KumoCloudClient, username, password
     )
-    # Login and load devices
-    await hass.async_add_executor_job(kumo_client.login_and_fetch_devices)
 
     async def async_update_data():
         """Fetch data from cloud API endpoint."""
@@ -42,6 +40,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             result = {}
             # Replace with your actual cloud async fetch call
             # Refresh data read
+            # Login and load devices
+            await hass.async_add_executor_job(kumo_client.login_and_fetch_devices)
             for device in kumo_client.devices:
                 result[device.get("adapter").get("deviceSerial")] = {
                     "name": device.get("name"),
