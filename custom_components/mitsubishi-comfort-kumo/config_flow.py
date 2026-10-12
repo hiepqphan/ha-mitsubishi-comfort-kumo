@@ -42,8 +42,8 @@ class MyCloudDeviceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             {
                 vol.Required(CONF_USERNAME): cv.string,
                 vol.Required(CONF_PASSWORD): cv.string,
-                vol.Optional(CONF_MASTER_UNIT_SERIAL): cv.string,
-                vol.Optional(CONF_IGNORED_UNITS_SERIALS, "comma sep list"): cv.string
+                vol.Optional(CONF_MASTER_UNIT_SERIAL, "", ""): cv.string,
+                vol.Optional(CONF_IGNORED_UNITS_SERIALS, "comma sep list", ""): cv.string
             }
         )
 

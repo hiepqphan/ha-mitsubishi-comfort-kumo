@@ -233,8 +233,8 @@ class KumoCloudClient:
         self.password = password
         self.site_id = site_id
         self.device_serials = device_serials
-        self.master_unit_serial = master_unit_serial
-        self.ignored_unit_serials = set(ignored_unit_serials.split(","))
+        self.master_unit_serial = master_unit_serial or ""
+        self.ignored_unit_serials = set((ignored_unit_serials or "").split(","))
         self.devices = None
         self.token_file = token_file or TOKEN_FILE
         self.tokens: TokenInfo | None = None
