@@ -1,0 +1,24 @@
+set_all_minisplits:
+  name: Set all Mitsubishi minisplits
+  description: Broadcasts a mode or temperature setting to all units simultaneously.
+  fields:
+    mode:
+      name: HVAC Mode
+      description: The operation mode to send (cool, heat, off).
+      example: "cool"
+      selector:
+        select:
+          options:
+            - "cool"
+            - "heat"
+            - "off"
+    temperature:
+      name: Temperature
+      description: Target temperature to set for all units.
+      example: 21.5
+      selector:
+        number:
+          min: 16
+          max: 30
+          step: 0.5
+          unit_of_measurement: "°C"

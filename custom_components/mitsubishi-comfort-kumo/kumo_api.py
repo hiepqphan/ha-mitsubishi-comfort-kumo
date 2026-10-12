@@ -741,6 +741,11 @@ class KumoCloudClient:
         """Get Kumo-specific device properties."""
         return self._request("GET", f"/v3/devices/{device_serial}/kumo-properties")
 
+    def get_temperature_field(self, mode: str) -> str:
+        if mode == "heat": return "spHeat"
+        elif mode == "cool": return "spCool"
+        else: return None
+
     def send_device_command(self, device_serial: str, commands: dict) -> dict:
         """
         Send command to device via the send-command endpoint.

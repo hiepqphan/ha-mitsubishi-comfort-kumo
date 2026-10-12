@@ -13,22 +13,9 @@ from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN
+from .const import DOMAIN, HA_TO_KUMO_MODE, KUMO_TO_HA_MODE
 
 _LOGGER = logging.getLogger(__name__)
-
-# Map Home Assistant HVAC modes to whatever your kumo_api expects
-HA_TO_KUMO_MODE = {
-    HVACMode.COOL: "cool",
-    HVACMode.HEAT: "heat",
-    HVACMode.OFF: "off",
-    HVACMode.DRY: "dry",
-    HVACMode.FAN_ONLY: "vent",
-    HVACMode.AUTO: "auto"
-}
-
-KUMO_TO_HA_MODE = {v: k for k, v in HA_TO_KUMO_MODE.items()}
-
 
 async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback

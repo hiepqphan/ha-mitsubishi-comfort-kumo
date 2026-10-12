@@ -1,16 +1,27 @@
+import voluptuous as vol
 from datetime import timedelta
 from typing import Any
 import logging, asyncio, traceback
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, Platform
+from homeassistant.core import HomeAssistant, ServiceCall
+from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, ATTR_TEMPERATURE, Platform
+from homeassistant.helpers import config_validation as cv
+from homeassistant.components.climate import HVACMode
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .const import DOMAIN
+from .const import DOMAIN, HA_TO_KUMO_MODE, KUMO_TO_HA_MODE
 from .kumo_api import KumoCloudClient
 
 _LOGGER = logging.getLogger(__name__)
 PLATFORMS: list[Platform] = [Platform.CLIMATE]
+SET_ALL_MINISPLITS_SERVICE_NAME = "set_all_minisplits"
+SET_ALL_SERVICE_SCHEMA = vol.Schema(
+    {
+        vol.Optional("mode"): vol.In([HVACMode.COOL, HVACMode.HEAT, HVACMode.OFF]),
+        vol.Optional(ATTR_TEMPERATURE): cv.positive_int,
+    }
+)
+
 
 def _get_temperature(device: Any) -> float:
     adapter = device.get("adapter")
@@ -62,6 +73,48 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         update_interval=timedelta(seconds=60),
     )
 
+    async def handle_set_all_minisplits(call: ServiceCall) -> None:
+        """Service handler to broadcast commands to all units."""
+        target_mode = call.data.get("mode")
+        target_temp = call.data.get(ATTR_TEMPERATURE)
+
+        # Get all splits currently managed by your integration cache
+        if not coordinator.data:
+            return
+
+        # Loop through every split ID and fire requests asynchronously in parallel
+        import asyncio
+        tasks = []
+
+        for device_id in coordinator.data.keys():
+            if target_mode:
+                tasks.append(kumo_client.send_device_command(device_id, {
+                    "operationMode": HA_TO_KUMO_MODE[target_mode]
+                }))
+            if target_temp:
+                kumo_mode = coordinator.data[device_id].get("mode")
+                temperature_field = kumo_client.get_temperature_field(kumo_mode)
+                if temperature_field == None:
+                    return
+                tasks.append(kumo_client.send_device_command(device_id, {
+                    temperature_field: target_temp
+                }))
+
+        # Run all cloud HTTP requests at the exact same time
+        if tasks:
+            await asyncio.gather(*tasks)
+            
+        # Force a refresh so all UI cards update instantly
+        await coordinator.async_request_refresh()
+
+    # Register the service action into Home Assistant
+    hass.services.async_register(
+        DOMAIN,
+        SET_ALL_MINISPLITS_SERVICE_NAME,
+        handle_set_all_minisplits,
+        schema=SET_ALL_SERVICE_SCHEMA,
+    )
+
     await coordinator.async_config_entry_first_refresh()
     
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
@@ -73,4 +126,5 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
         hass.data[DOMAIN].pop(entry.entry_id)
+        hass.services.async_remove(DOMAIN, SET_ALL_MINISPLITS_SERVICE_NAME)
     return unload_ok
