@@ -85,6 +85,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         # Loop through every split ID and fire requests asynchronously in parallel
 
         for device_id in coordinator.data.keys():
+            # Skip turned-off devices
+            if coordinator.data[device_id].get("mode") == "off":
+                continue
             if target_mode:
                 await hass.async_add_executor_job(kumo_client.send_device_command, device_id, {
                     "operationMode": HA_TO_KUMO_MODE[target_mode]
