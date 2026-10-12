@@ -33,6 +33,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     kumo_client = await hass.async_add_executor_job(
         KumoCloudClient, username, password
     )
+    await hass.async_add_executor_job(kumo_client.login_and_fetch_devices)
 
     async def async_update_data():
         """Fetch data from cloud API endpoint."""
@@ -40,8 +41,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             result = {}
             # Replace with your actual cloud async fetch call
             # Refresh data read
-            # Login and load devices
-            await hass.async_add_executor_job(kumo_client.login_and_fetch_devices)
+            await hass.async_add_executor_job(kumo_client.get_fresh_devices)
             for device in kumo_client.devices:
                 result[device.get("adapter").get("deviceSerial")] = {
                     "name": device.get("name"),
@@ -51,8 +51,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 }
             return result
         except Exception as err:
-            _LOGGER.error("kumo failed here: %s", traceback.format_exc())
-            _LOGGER.error("kumo failed error: %s", err)
+            await hass.async_add_executor_job(kumo_client.login_and_fetch_devices)
             raise UpdateFailed(f"Cloud communication error: {err}")
 
     coordinator = DataUpdateCoordinator(
@@ -60,7 +59,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         _LOGGER,
         name=DOMAIN,
         update_method=async_update_data,
-        update_interval=timedelta(seconds=10),
+        update_interval=timedelta(seconds=60),
     )
 
     await coordinator.async_config_entry_first_refresh()

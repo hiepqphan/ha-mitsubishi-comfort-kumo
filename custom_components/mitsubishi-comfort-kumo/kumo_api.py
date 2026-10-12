@@ -606,6 +606,9 @@ class KumoCloudClient:
         # Fall back to REST API (may have cached data)
         return self.get_device(device_serial)
 
+    def get_fresh_devices(self) -> list[dict]:
+        return self._load_devices()
+
     # ========== Service ==========
 
     def get_config(self) -> dict:
