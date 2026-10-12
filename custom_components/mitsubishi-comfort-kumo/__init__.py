@@ -9,7 +9,7 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.components.climate import HVACMode
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .const import DOMAIN, HA_TO_KUMO_MODE, KUMO_TO_HA_MODE
+from .const import DOMAIN, HA_TO_KUMO_MODE, CONF_IGNORED_UNITS_SERIALS, CONF_MASTER_UNIT_SERIAL
 from .kumo_api import KumoCloudClient
 
 _LOGGER = logging.getLogger(__name__)
