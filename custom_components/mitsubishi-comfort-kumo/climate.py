@@ -17,6 +17,7 @@ from .const import DOMAIN, HA_TO_KUMO_MODE, KUMO_TO_HA_MODE
 
 _LOGGER = logging.getLogger(__name__)
 
+
 async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
@@ -27,7 +28,9 @@ async def async_setup_entry(
     entities = []
     if coordinator.data:
         for id, device in coordinator.data.items():
-            entities.append(MitsubishiMinisplit(coordinator, entry, id, device.get("name")))
+            entities.append(
+                MitsubishiMinisplit(coordinator, entry, id, device.get("name"))
+            )
 
     async_add_entities(entities)
 
@@ -37,22 +40,27 @@ class MitsubishiMinisplit(CoordinatorEntity, ClimateEntity):
 
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_hvac_modes = [
-        HVACMode.COOL, HVACMode.HEAT, HVACMode.OFF, 
-        # Commented these out to simplify controls and reduce user errors
-        # HVACMode.DRY, HVACMode.FAN_ONLY, HVACMode.AUTO
+        HVACMode.COOL,
+        HVACMode.HEAT,
+        HVACMode.OFF,
+        HVACMode.DRY,
+        HVACMode.FAN_ONLY,
+        HVACMode.AUTO,
     ]
     _attr_supported_features = (
-        ClimateEntityFeature.TARGET_TEMPERATURE 
-        | ClimateEntityFeature.TURN_ON 
+        ClimateEntityFeature.TARGET_TEMPERATURE
+        | ClimateEntityFeature.TURN_ON
         | ClimateEntityFeature.TURN_OFF
     )
 
-    def __init__(self, coordinator, entry: ConfigEntry, device_id: str, name: str) -> None:
+    def __init__(
+        self, coordinator, entry: ConfigEntry, device_id: str, name: str
+    ) -> None:
         """Initialize the climate entity."""
         super().__init__(coordinator)
         self.entry = entry
         self.device_id = device_id
-        
+
         # Entity Identifiers
         self._attr_name = name
         self._attr_unique_id = f"{entry.entry_id}_{device_id}_climate"
@@ -68,7 +76,11 @@ class MitsubishiMinisplit(CoordinatorEntity, ClimateEntity):
     @property
     def _device_data(self) -> dict[str, Any]:
         """Helper to get data safely for this specific minisplit from cache."""
-        return self.coordinator.data.get(self.device_id, {}) if self.coordinator.data else {}
+        return (
+            self.coordinator.data.get(self.device_id, {})
+            if self.coordinator.data
+            else {}
+        )
 
     @property
     def current_temperature(self) -> float | None:
@@ -89,16 +101,18 @@ class MitsubishiMinisplit(CoordinatorEntity, ClimateEntity):
     async def async_set_hvac_mode(self, hvac_mode: HVACMode) -> None:
         """Set new target hvac mode via Cloud API."""
         kumo_mode = HA_TO_KUMO_MODE.get(hvac_mode, "off")
-        
+
         # Pull your cloud api client wrapper context
         # Adjust this call to your actual kumo_api method signature
-        kumo_client = self.coordinator.hass.data[DOMAIN][self.entry.entry_id + "_kumo_client"]
-        
+        kumo_client = self.coordinator.hass.data[DOMAIN][
+            self.entry.entry_id + "_kumo_client"
+        ]
+
         # Execute blocking cloud command in executor
         await self.hass.async_add_executor_job(
-            kumo_client.send_device_command, self.device_id, {
-                "operationMode": kumo_mode
-            }
+            kumo_client.send_device_command,
+            self.device_id,
+            {"operationMode": kumo_mode},
         )
 
         # If updating master unit, change all other units (if not ignored)
@@ -107,11 +121,9 @@ class MitsubishiMinisplit(CoordinatorEntity, ClimateEntity):
                 if id == self.device_id or id in kumo_client.ignored_unit_serials:
                     continue
                 await self.hass.async_add_executor_job(
-                    kumo_client.send_device_command, id, {
-                        "operationMode": kumo_mode
-                    }
+                    kumo_client.send_device_command, id, {"operationMode": kumo_mode}
                 )
-        
+
         # Force a background data refresh so the UI updates instantly
         await self.coordinator.async_request_refresh()
 
@@ -120,18 +132,23 @@ class MitsubishiMinisplit(CoordinatorEntity, ClimateEntity):
         if (target_temp := kwargs.get(ATTR_TEMPERATURE)) is None:
             return
 
-        kumo_client = self.coordinator.hass.data[DOMAIN][self.entry.entry_id + "_kumo_client"]
-        
+        kumo_client = self.coordinator.hass.data[DOMAIN][
+            self.entry.entry_id + "_kumo_client"
+        ]
+
         # Execute blocking cloud command in executor
         kumo_mode = self.coordinator.data[self.device_id].get("mode")
         temperature_field = ""
-        if kumo_mode == "heat": temperature_field = "spHeat"
-        elif kumo_mode == "cool": temperature_field = "spCool"
-        else: return
+        if kumo_mode == "heat":
+            temperature_field = "spHeat"
+        elif kumo_mode == "cool":
+            temperature_field = "spCool"
+        else:
+            return
         await self.hass.async_add_executor_job(
-            kumo_client.send_device_command, self.device_id, {
-                temperature_field: target_temp
-            }
+            kumo_client.send_device_command,
+            self.device_id,
+            {temperature_field: target_temp},
         )
 
         # If updating master unit, change all other units (if not ignored)
@@ -140,10 +157,10 @@ class MitsubishiMinisplit(CoordinatorEntity, ClimateEntity):
                 if id == self.device_id or id in kumo_client.ignored_unit_serials:
                     continue
                 await self.hass.async_add_executor_job(
-                    kumo_client.send_device_command, id, {
-                        temperature_field: target_temp
-                    }
+                    kumo_client.send_device_command,
+                    id,
+                    {temperature_field: target_temp},
                 )
-        
+
         # Force a background data refresh so the UI updates instantly
         await self.coordinator.async_request_refresh()

@@ -13,6 +13,6 @@ HA_TO_KUMO_MODE = {
     HVACMode.OFF: "off",
     HVACMode.DRY: "dry",
     HVACMode.FAN_ONLY: "vent",
-    HVACMode.AUTO: "auto"
+    HVACMode.AUTO: "auto",
 }
 KUMO_TO_HA_MODE = {v: k for k, v in HA_TO_KUMO_MODE.items()}

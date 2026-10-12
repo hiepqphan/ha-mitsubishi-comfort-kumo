@@ -6,6 +6,7 @@ Based on reverse-engineered API documentation.
 """
 
 from dotenv import load_dotenv
+
 load_dotenv()
 
 import json
@@ -21,6 +22,7 @@ import os
 # Optional Socket.IO support for real-time data
 try:
     import socketio
+
     HAS_SOCKETIO = True
 except ImportError:
     HAS_SOCKETIO = False
@@ -58,6 +60,7 @@ ENV_SERIAL_PREFIX = "KUMO_SERIAL_"
 
 # ========== Temperature Conversion ==========
 
+
 def celsius_to_fahrenheit(c: float | None) -> int | None:
     """Convert Celsius to Fahrenheit using Mitsubishi thermostat rounding rules.
 
@@ -91,6 +94,7 @@ def fahrenheit_to_celsius(f: float | None) -> float | None:
 @dataclass
 class TokenInfo:
     """JWT token information with expiration tracking."""
+
     access: str
     refresh: str
     access_expires_at: datetime = field(default_factory=datetime.now)
@@ -104,7 +108,8 @@ class TokenInfo:
         return cls(
             access=data.get("access", ""),
             refresh=data.get("refresh", ""),
-            access_expires_at=now + timedelta(minutes=18),  # Buffer before actual expiry
+            access_expires_at=now
+            + timedelta(minutes=18),  # Buffer before actual expiry
             refresh_expires_at=now + timedelta(days=25),  # Buffer before actual expiry
         )
 
@@ -135,6 +140,7 @@ class TokenInfo:
 @dataclass
 class DeviceStatus:
     """Represents the status of a Kumo device (indoor unit)."""
+
     serial: str
     name: str
     room_temp: int | None = None
@@ -142,8 +148,12 @@ class DeviceStatus:
     sp_cool: int | None = None  # Cooling setpoint (F)
     sp_heat: int | None = None  # Heating setpoint (F)
     mode: str | None = None  # off, cool, heat, dry, vent, auto
-    fan_speed: str | None = None  # superQuiet, quiet, low, powerful, superPowerful, auto
-    air_direction: str | None = None  # auto, horizontal, midhorizontal, midpoint, midvertical, vertical, swing
+    fan_speed: str | None = (
+        None  # superQuiet, quiet, low, powerful, superPowerful, auto
+    )
+    air_direction: str | None = (
+        None  # auto, horizontal, midhorizontal, midpoint, midvertical, vertical, swing
+    )
     is_on: bool = False
     humidity: int | None = None
     connected: bool = True
@@ -186,17 +196,21 @@ class DeviceStatus:
         mode_info = f" | Mode: {self.mode}" if self.mode else ""
         fan_info = f" | Fan: {self.fan_speed}" if self.fan_speed else ""
         vane_info = f" | Vane: {self.air_direction}" if self.air_direction else ""
-        humidity_info = f" | Humidity: {self.humidity}%" if self.humidity is not None else ""
+        humidity_info = (
+            f" | Humidity: {self.humidity}%" if self.humidity is not None else ""
+        )
         return f"{self.name:<12} [{status}]{conn}{temp_info}{mode_info}{fan_info}{vane_info}{humidity_info}"
 
 
 class KumoCloudError(Exception):
     """Base exception for Kumo Cloud API errors."""
+
     pass
 
 
 class AuthenticationError(KumoCloudError):
     """Authentication failed."""
+
     pass
 
 
@@ -279,7 +293,7 @@ class KumoCloudClient:
         serials = {}
         for key, value in os.environ.items():
             if key.startswith(ENV_SERIAL_PREFIX):
-                device_name = key[len(ENV_SERIAL_PREFIX):].lower()
+                device_name = key[len(ENV_SERIAL_PREFIX) :].lower()
                 serials[device_name] = value
         return serials
 
@@ -338,9 +352,7 @@ class KumoCloudClient:
             )
 
         if response.status_code >= 400:
-            raise KumoCloudError(
-                f"API error {response.status_code}: {response.text}"
-            )
+            raise KumoCloudError(f"API error {response.status_code}: {response.text}")
 
         if response.content:
             return response.json()
@@ -491,7 +503,9 @@ class KumoCloudClient:
                 pass
             self._sio = None
 
-    def force_device_refresh(self, device_serial: str, timeout: float = 5.0) -> dict | None:
+    def force_device_refresh(
+        self, device_serial: str, timeout: float = 5.0
+    ) -> dict | None:
         """
         Force a device to report its current status via Socket.IO.
 
@@ -746,9 +760,12 @@ class KumoCloudClient:
         return self._request("GET", f"/v3/devices/{device_serial}/kumo-properties")
 
     def get_temperature_field(self, mode: str) -> str:
-        if mode == "heat": return "spHeat"
-        elif mode == "cool": return "spCool"
-        else: return None
+        if mode == "heat":
+            return "spHeat"
+        elif mode == "cool":
+            return "spCool"
+        else:
+            return None
 
     def send_device_command(self, device_serial: str, commands: dict) -> dict:
         """
@@ -771,10 +788,7 @@ class KumoCloudClient:
         Returns:
             API response (typically {"devices": ["serial"]})
         """
-        payload = {
-            "deviceSerial": device_serial,
-            "commands": commands
-        }
+        payload = {"deviceSerial": device_serial, "commands": commands}
         return self._request("POST", "/v3/devices/send-command", json_data=payload)
 
     def set_device_settings(self, device_serial: str, settings: dict) -> dict:
@@ -898,7 +912,9 @@ class KumoCloudClient:
 
         return None
 
-    def get_device_by_name(self, name: str, refresh: bool = False) -> DeviceStatus | None:
+    def get_device_by_name(
+        self, name: str, refresh: bool = False
+    ) -> DeviceStatus | None:
         """
         Get device status by name (e.g., "upstairs", "downstairs").
 
@@ -1150,11 +1166,15 @@ class KumoCloudClient:
         Returns:
             Dict with 'data' list of connection events, 'next', 'previous', 'count'
         """
-        return self._request("GET", f"/v3/zones/{zone_id}/connection-history?page={page}")
+        return self._request(
+            "GET", f"/v3/zones/{zone_id}/connection-history?page={page}"
+        )
 
     def get_zone_comfort_settings(self, zone_id: str) -> dict:
         """Get comfort settings for a zone."""
-        return self._request("GET", f"/v3/zones/{zone_id}/comfort-settings?zoneId={zone_id}")
+        return self._request(
+            "GET", f"/v3/zones/{zone_id}/comfort-settings?zoneId={zone_id}"
+        )
 
     # ========== Comfort Settings ==========
 
@@ -1280,7 +1300,9 @@ class KumoCloudClient:
                     if device.schedule_owner:
                         extras.append(f"Schedule: {device.schedule_owner}")
                     if device.sp_cool is not None and device.sp_heat is not None:
-                        extras.append(f"Setpoints: Cool={device.sp_cool:.0f}F Heat={device.sp_heat:.0f}F")
+                        extras.append(
+                            f"Setpoints: Cool={device.sp_cool:.0f}F Heat={device.sp_heat:.0f}F"
+                        )
                     if extras:
                         print(f"    [{', '.join(extras)}]")
 
@@ -1299,6 +1321,7 @@ class KumoCloudClient:
 
 
 # ========== CLI Interface ==========
+
 
 def main():
     """Command-line interface for Kumo Cloud client."""
@@ -1336,12 +1359,14 @@ Note: Use -r/--refresh to get accurate real-time data from devices.
     )
 
     parser.add_argument(
-        "-u", "--username",
+        "-u",
+        "--username",
         help="Kumo Cloud username (or set KUMO_USERNAME env var)",
         default=os.environ.get("KUMO_USERNAME"),
     )
     parser.add_argument(
-        "-p", "--password",
+        "-p",
+        "--password",
         help="Kumo Cloud password (or set KUMO_PASSWORD env var)",
         default=os.environ.get("KUMO_PASSWORD"),
     )
@@ -1360,11 +1385,13 @@ Note: Use -r/--refresh to get accurate real-time data from devices.
     # Status command
     status_parser = subparsers.add_parser("status", help="Show device status")
     status_parser.add_argument(
-        "-d", "--device",
+        "-d",
+        "--device",
         help="Specific device serial (optional)",
     )
     status_parser.add_argument(
-        "-v", "--verbose",
+        "-v",
+        "--verbose",
         action="store_true",
         help="Show additional device info (RSSI, MHK2, etc.)",
     )
@@ -1374,24 +1401,30 @@ Note: Use -r/--refresh to get accurate real-time data from devices.
         help="Output as JSON",
     )
     status_parser.add_argument(
-        "-r", "--refresh",
+        "-r",
+        "--refresh",
         action="store_true",
         help="Force refresh from devices via Socket.IO (bypasses server cache, requires python-socketio)",
     )
 
     # Set temperature command
     set_temp_parser = subparsers.add_parser("set-temp", help="Set target temperature")
-    set_temp_parser.add_argument("device", help="Device serial or name (e.g., 'upstairs', 'downstairs')")
+    set_temp_parser.add_argument(
+        "device", help="Device serial or name (e.g., 'upstairs', 'downstairs')"
+    )
     set_temp_parser.add_argument("temp", type=float, help="Target temperature (F)")
     set_temp_parser.add_argument(
-        "-m", "--mode",
+        "-m",
+        "--mode",
         choices=["cool", "heat", "auto"],
         help="Mode to use",
     )
 
     # Set mode command
     set_mode_parser = subparsers.add_parser("set-mode", help="Set operating mode")
-    set_mode_parser.add_argument("device", help="Device serial or name (e.g., 'upstairs', 'downstairs')")
+    set_mode_parser.add_argument(
+        "device", help="Device serial or name (e.g., 'upstairs', 'downstairs')"
+    )
     set_mode_parser.add_argument(
         "mode",
         choices=["off", "cool", "heat", "dry", "fan", "auto"],
@@ -1400,14 +1433,20 @@ Note: Use -r/--refresh to get accurate real-time data from devices.
 
     # Turn on/off commands
     on_parser = subparsers.add_parser("turn-on", help="Turn on device")
-    on_parser.add_argument("device", help="Device serial or name (e.g., 'upstairs', 'downstairs')")
+    on_parser.add_argument(
+        "device", help="Device serial or name (e.g., 'upstairs', 'downstairs')"
+    )
 
     off_parser = subparsers.add_parser("turn-off", help="Turn off device")
-    off_parser.add_argument("device", help="Device serial or name (e.g., 'upstairs', 'downstairs')")
+    off_parser.add_argument(
+        "device", help="Device serial or name (e.g., 'upstairs', 'downstairs')"
+    )
 
     # Set fan speed command
     fan_parser = subparsers.add_parser("set-fan", help="Set fan speed")
-    fan_parser.add_argument("device", help="Device serial or name (e.g., 'upstairs', 'downstairs')")
+    fan_parser.add_argument(
+        "device", help="Device serial or name (e.g., 'upstairs', 'downstairs')"
+    )
     fan_parser.add_argument(
         "speed",
         choices=["superQuiet", "quiet", "low", "powerful", "superPowerful", "auto"],
@@ -1416,10 +1455,20 @@ Note: Use -r/--refresh to get accurate real-time data from devices.
 
     # Set air direction command
     vane_parser = subparsers.add_parser("set-vane", help="Set air direction (vane)")
-    vane_parser.add_argument("device", help="Device serial or name (e.g., 'upstairs', 'downstairs')")
+    vane_parser.add_argument(
+        "device", help="Device serial or name (e.g., 'upstairs', 'downstairs')"
+    )
     vane_parser.add_argument(
         "direction",
-        choices=["auto", "horizontal", "midhorizontal", "midpoint", "midvertical", "vertical", "swing"],
+        choices=[
+            "auto",
+            "horizontal",
+            "midhorizontal",
+            "midpoint",
+            "midvertical",
+            "vertical",
+            "swing",
+        ],
         help="Air direction",
     )
 
@@ -1428,8 +1477,17 @@ Note: Use -r/--refresh to get accurate real-time data from devices.
     raw_parser.add_argument(
         "endpoint",
         choices=[
-            "account", "config", "sites", "zones", "groups", "device",
-            "device-status", "device-profile", "device-limits", "device-props", "weather",
+            "account",
+            "config",
+            "sites",
+            "zones",
+            "groups",
+            "device",
+            "device-status",
+            "device-profile",
+            "device-limits",
+            "device-props",
+            "weather",
         ],
         help="API endpoint to call",
     )
@@ -1445,7 +1503,8 @@ Note: Use -r/--refresh to get accurate real-time data from devices.
         help="Check whether each adapter is really online (Socket.IO device_status_v2)",
     )
     check_parser.add_argument(
-        "-d", "--device",
+        "-d",
+        "--device",
         help="Specific device name or serial (default: all configured devices)",
     )
     check_parser.add_argument(
@@ -1467,7 +1526,9 @@ Note: Use -r/--refresh to get accurate real-time data from devices.
     username = args.username
     password = args.password
 
-    if args.command == "login" or (not TOKEN_FILE.exists() and not (username and password)):
+    if args.command == "login" or (
+        not TOKEN_FILE.exists() and not (username and password)
+    ):
         if not username:
             username = input("Kumo Cloud Username: ")
         if not password:
@@ -1486,23 +1547,23 @@ Note: Use -r/--refresh to get accurate real-time data from devices.
                 print(f"Tokens cached to: {args.token_file}")
 
             elif args.command in ("status", "list"):
-                refresh = getattr(args, 'refresh', False)
-                if hasattr(args, 'device') and args.device:
+                refresh = getattr(args, "refresh", False)
+                if hasattr(args, "device") and args.device:
                     # For specific device, use refresh if requested
                     if refresh:
                         status = client.get_fresh_device_status(args.device)
                     else:
                         status = client.get_device_status(args.device)
-                    if getattr(args, 'json', False):
+                    if getattr(args, "json", False):
                         print(json.dumps(status, indent=2))
                     else:
                         print(json.dumps(status, indent=2))
                 else:
-                    if getattr(args, 'json', False):
+                    if getattr(args, "json", False):
                         devices = client.get_all_devices(refresh=refresh)
                         print(json.dumps([d.raw_data for d in devices], indent=2))
                     else:
-                        verbose = getattr(args, 'verbose', False)
+                        verbose = getattr(args, "verbose", False)
                         client.print_status(verbose=verbose, refresh=refresh)
 
             elif args.command == "check":
@@ -1593,13 +1654,17 @@ Note: Use -r/--refresh to get accurate real-time data from devices.
                 elif args.endpoint == "zones":
                     site_id = args.id or client.site_id
                     if not site_id:
-                        print("Error: Site ID required for zones endpoint (set KUMO_SITE_ID or provide as argument)")
+                        print(
+                            "Error: Site ID required for zones endpoint (set KUMO_SITE_ID or provide as argument)"
+                        )
                         return
                     result = client.get_zones(site_id)
                 elif args.endpoint == "groups":
                     site_id = args.id or client.site_id
                     if not site_id:
-                        print("Error: Site ID required for groups endpoint (set KUMO_SITE_ID or provide as argument)")
+                        print(
+                            "Error: Site ID required for groups endpoint (set KUMO_SITE_ID or provide as argument)"
+                        )
                         return
                     result = client.get_groups(site_id)
                 elif args.endpoint == "device":
@@ -1631,7 +1696,9 @@ Note: Use -r/--refresh to get accurate real-time data from devices.
                 elif args.endpoint == "weather":
                     site_id = args.id or client.site_id
                     if not site_id:
-                        print("Error: Site ID required for weather endpoint (set KUMO_SITE_ID or provide as argument)")
+                        print(
+                            "Error: Site ID required for weather endpoint (set KUMO_SITE_ID or provide as argument)"
+                        )
                         return
                     result = client.get_weather(site_id)
 

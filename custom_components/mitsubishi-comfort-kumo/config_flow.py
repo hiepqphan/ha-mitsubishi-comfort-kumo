@@ -9,6 +9,7 @@ from .kumo_api import KumoCloudClient
 
 _LOGGER = logging.getLogger(__name__)
 
+
 class MyCloudDeviceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for My Cloud Device."""
 
@@ -26,14 +27,14 @@ class MyCloudDeviceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             # e.g., success = await async_validate_credentials(username, password)
             client = KumoCloudClient(username, password)
             login_result = client.login()
-            success = login_result.get("email") is not None and login_result.get("email") != ""
+            success = (
+                login_result.get("email") is not None
+                and login_result.get("email") != ""
+            )
 
             if success:
                 # Creates the integration instance in HA
-                return self.async_create_entry(
-                    title=username, 
-                    data=user_input
-                )
+                return self.async_create_entry(title=username, data=user_input)
             else:
                 errors["base"] = "invalid_auth"
 
@@ -43,12 +44,12 @@ class MyCloudDeviceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 vol.Required(CONF_USERNAME): cv.string,
                 vol.Required(CONF_PASSWORD): cv.string,
                 vol.Optional(CONF_MASTER_UNIT_SERIAL, "", ""): cv.string,
-                vol.Optional(CONF_IGNORED_UNITS_SERIALS, "comma sep list", ""): cv.string
+                vol.Optional(
+                    CONF_IGNORED_UNITS_SERIALS, "comma sep list", ""
+                ): cv.string,
             }
         )
 
         return self.async_show_form(
-            step_id="user", 
-            data_schema=data_schema, 
-            errors=errors
+            step_id="user", data_schema=data_schema, errors=errors
         )

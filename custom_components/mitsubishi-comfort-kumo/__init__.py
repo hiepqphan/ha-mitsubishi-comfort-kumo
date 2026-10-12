@@ -9,7 +9,12 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.components.climate import HVACMode
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .const import DOMAIN, HA_TO_KUMO_MODE, CONF_IGNORED_UNITS_SERIALS, CONF_MASTER_UNIT_SERIAL
+from .const import (
+    DOMAIN,
+    HA_TO_KUMO_MODE,
+    CONF_IGNORED_UNITS_SERIALS,
+    CONF_MASTER_UNIT_SERIAL,
+)
 from .kumo_api import KumoCloudClient
 
 _LOGGER = logging.getLogger(__name__)
@@ -30,9 +35,12 @@ def _get_temperature(device: Any) -> float:
     mode = adapter.get("operationMode")
     if mode != "cool" and mode != "heat":
         mode = adapter.get("previousOperationMode")
-    if mode == "cool": return cool_temp
-    elif mode == "heat": return heat_temp
-    else: return 0.0
+    if mode == "cool":
+        return cool_temp
+    elif mode == "heat":
+        return heat_temp
+    else:
+        return 0.0
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -41,7 +49,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     password = entry.data[CONF_PASSWORD]
     master_unit_serial = entry.data[CONF_MASTER_UNIT_SERIAL]
     ignored_units_serials = entry.data[CONF_IGNORED_UNITS_SERIALS]
-    
+
     # Initialize your API using username/password here
     kumo_client = await hass.async_add_executor_job(
         KumoCloudClient, username, password, master_unit_serial, ignored_units_serials
@@ -60,7 +68,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     "name": device.get("name"),
                     "room_temp": device.get("adapter").get("roomTemp"),
                     "set_temp": _get_temperature(device),
-                    "mode": device.get("adapter").get("operationMode")
+                    "mode": device.get("adapter").get("operationMode"),
                 }
             return result
         except Exception as err:
@@ -88,18 +96,22 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
         for device_id in coordinator.data.keys():
             if target_mode:
-                await hass.async_add_executor_job(kumo_client.send_device_command, device_id, {
-                    "operationMode": HA_TO_KUMO_MODE[target_mode]
-                })
+                await hass.async_add_executor_job(
+                    kumo_client.send_device_command,
+                    device_id,
+                    {"operationMode": HA_TO_KUMO_MODE[target_mode]},
+                )
             # This is takes raw input number, and Mitsubishi uses Celsius
             if target_temp:
                 kumo_mode = coordinator.data[device_id].get("mode")
                 temperature_field = kumo_client.get_temperature_field(kumo_mode)
                 if temperature_field == None:
                     return
-                await hass.async_add_executor_job(kumo_client.send_device_command, device_id, {
-                    temperature_field: target_temp
-                })
+                await hass.async_add_executor_job(
+                    kumo_client.send_device_command,
+                    device_id,
+                    {temperature_field: target_temp},
+                )
 
         # Force a refresh so all UI cards update instantly
         await coordinator.async_request_refresh()
@@ -113,11 +125,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     )
 
     await coordinator.async_config_entry_first_refresh()
-    
+
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
     hass.data[DOMAIN][entry.entry_id + "_kumo_client"] = kumo_client
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
+
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
