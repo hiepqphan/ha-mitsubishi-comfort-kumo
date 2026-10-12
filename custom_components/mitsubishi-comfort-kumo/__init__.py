@@ -40,7 +40,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     kumo_client.get_fresh_device_status,
                     kumo_client.device_serials[0].get("adapter").get("deviceSerial")
                 )
-                result.get("temperature") = device_status.get("roomTemp")
+                result["temperature"] = device_status.get("roomTemp")
             else:
                 _LOGGER.debug("Kumo client has no device serials")
             return result
