@@ -17,8 +17,8 @@ PLATFORMS: list[Platform] = [Platform.CLIMATE]
 SET_ALL_MINISPLITS_SERVICE_NAME = "set_all_minisplits"
 SET_ALL_SERVICE_SCHEMA = vol.Schema(
     {
-        vol.Optional("mode", "heat, cool, off"): vol.In([HVACMode.COOL, HVACMode.HEAT, HVACMode.OFF]),
-        vol.Optional(ATTR_TEMPERATURE, "in Celsius"): cv.positive_int,
+        vol.Optional("mode"): vol.In([HVACMode.COOL, HVACMode.HEAT, HVACMode.OFF]),
+        vol.Optional(ATTR_TEMPERATURE): cv.positive_int,
     }
 )
 
