@@ -35,11 +35,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             result = {"temperature": 0}
             # Replace with your actual cloud async fetch call
             # Refresh data read
-            _LOGGER.debug(kumo_client.device_serials)
-            if kumo_client.device_serials is not None and len(kumo_client.device_serials) > 0:
+            _LOGGER.debug(kumo_client.devices)
+            if kumo_client.devices is not None and len(kumo_client.devices) > 0:
                 device_status = await hass.async_add_executor_job(
                     kumo_client.get_fresh_device_status,
-                    kumo_client.device_serials["KUMO_SERIAL_FAMILYROOM"]
+                    kumo_client.devices[0].get("adapter").get("deviceSerial")
                 )
                 result["temperature"] = device_status.get("roomTemp")
             else:

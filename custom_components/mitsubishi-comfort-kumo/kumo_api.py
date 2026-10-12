@@ -231,6 +231,7 @@ class KumoCloudClient:
         self.password = password
         self.site_id = site_id
         self.device_serials = device_serials
+        self.devices = None
         self.token_file = token_file or TOKEN_FILE
         self.tokens: TokenInfo | None = None
         self._client = httpx.Client(
@@ -264,6 +265,10 @@ class KumoCloudClient:
             result[name] = serial
         self.device_serials = None if len(result) == 0 else result
         return self.device_serials
+
+    def _load_devices(self) -> list[dict]:
+        self.devices = self.get_zones(self.site_id)
+        return self.devices
 
     def _load_serials_from_env(self) -> dict[str, str]:
         """Load device serials from environment variables (KUMO_SERIAL_*)."""
