@@ -1,4 +1,5 @@
 from datetime import timedelta
+from typing import Any
 import logging, asyncio, traceback
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -9,7 +10,19 @@ from .const import DOMAIN
 from .kumo_api import KumoCloudClient
 
 _LOGGER = logging.getLogger(__name__)
-PLATFORMS: list[Platform] = [Platform.SENSOR]
+PLATFORMS: list[Platform] = [Platform.CLIMATE]
+
+def _get_temperature(device: Any) -> float:
+    adapter = device.get("adapter")
+    cool_temp = adapter.get("spCool")
+    heat_temp = adapter.get("spHeat")
+    mode = adapter.get("operationMode")
+    if mode != "cool" and mode != "heat":
+        mode = adapter.get("previousOperationMode")
+    if mode == "cool": return cool_temp
+    elif mode == "heat": return heat_temp
+    else: return 0.0
+
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up My Cloud Device from a config entry."""
@@ -20,30 +33,22 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     kumo_client = await hass.async_add_executor_job(
         KumoCloudClient, username, password
     )
-    await hass.async_add_executor_job(kumo_client.login)
-    # kumo_client.login(username, password)
-    await asyncio.sleep(3)
-    await hass.async_add_executor_job(kumo_client._load_first_site_id)
-    # kumo_client._load_first_site_id()
-    await asyncio.sleep(3)
-    await hass.async_add_executor_job(kumo_client._load_device_serials)
-    # kumo_client._load_device_serials()
+    # Login and load devices
+    await hass.async_add_executor_job(kumo_client.login_and_fetch_devices)
 
     async def async_update_data():
         """Fetch data from cloud API endpoint."""
         try:
-            result = {"temperature": 0}
+            result = {}
             # Replace with your actual cloud async fetch call
             # Refresh data read
-            _LOGGER.debug(kumo_client.devices)
-            if kumo_client.devices is not None and len(kumo_client.devices) > 0:
-                device_status = await hass.async_add_executor_job(
-                    kumo_client.get_fresh_device_status,
-                    kumo_client.devices[0].get("adapter").get("deviceSerial")
-                )
-                result["temperature"] = device_status.get("roomTemp")
-            else:
-                _LOGGER.debug("Kumo client has no device serials")
+            for device in kumo_client.devices:
+                result[device.get("adapter").get("deviceSerial")] = {
+                    "name": device.get("name"),
+                    "room_temp": device.get("adapter").get("roomTemp"),
+                    "set_temp": _get_temperature(device),
+                    "mode": device.get("operationMode")
+                }
             return result
         except Exception as err:
             _LOGGER.error("kumo failed here: %s", traceback.format_exc())
@@ -61,6 +66,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await coordinator.async_config_entry_first_refresh()
     
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
+    hass.data[DOMAIN][entry.entry_id + "_kumo_client"] = kumo_client
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
 

@@ -400,6 +400,11 @@ class KumoCloudClient:
 
         return data
 
+    def login_and_fetch_devices(self) -> None:
+        self.login()
+        self._load_first_site_id()
+        self._load_devices()
+
     def _refresh_token(self) -> None:
         """Refresh the access token using the refresh token."""
         if not self.tokens or not self.tokens.refresh:
