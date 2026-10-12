@@ -32,13 +32,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     async def async_update_data():
         """Fetch data from cloud API endpoint."""
         try:
+            result = {"temperature": 0}
             # Replace with your actual cloud async fetch call
             # Refresh data read
-            device_status = await hass.async_add_executor_job(
-                kumo_client.get_fresh_device_status,
-                kumo_client.device_serials[0].get("adapter").get("deviceSerial")
-            )
-            return {"temperature": device_status.get("roomTemp")}
+            if kumo_client.device_serials is not None and len(kumo_client.device_serials) > 0:
+                device_status = await hass.async_add_executor_job(
+                    kumo_client.get_fresh_device_status,
+                    kumo_client.device_serials[0].get("adapter").get("deviceSerial")
+                )
+                result.get("temperature") = device_status.get("roomTemp")
+            else:
+                _LOGGER.debug("Kumo client has no device serials")
+            return result
         except Exception as err:
             _LOGGER.error("kumo failed here: %s", traceback.format_exc())
             _LOGGER.error("kumo failed error: %s", err)
