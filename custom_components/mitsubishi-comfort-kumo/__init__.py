@@ -14,6 +14,7 @@ from .const import (
     HA_TO_KUMO_MODE,
     CONF_IGNORED_UNITS_SERIALS,
     CONF_MASTER_UNIT_SERIAL,
+    POLL_INTERVAL_SECONDS,
 )
 from .kumo_api import KumoCloudClient
 
@@ -80,7 +81,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         _LOGGER,
         name=DOMAIN,
         update_method=async_update_data,
-        update_interval=timedelta(seconds=60),
+        update_interval=timedelta(seconds=POLL_INTERVAL_SECONDS),
     )
 
     async def handle_set_all_minisplits(call: ServiceCall) -> None:

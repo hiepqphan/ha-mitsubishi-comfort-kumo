@@ -1,4 +1,4 @@
-import logging
+import logging, asyncio
 from typing import Any
 
 from homeassistant.components.climate import (
@@ -125,6 +125,8 @@ class MitsubishiMinisplit(CoordinatorEntity, ClimateEntity):
                 )
 
         # Force a background data refresh so the UI updates instantly
+        asyncio.sleep(5)
+        # seconds
         await self.coordinator.async_request_refresh()
 
     async def async_set_temperature(self, **kwargs: Any) -> None:
@@ -163,4 +165,6 @@ class MitsubishiMinisplit(CoordinatorEntity, ClimateEntity):
                 )
 
         # Force a background data refresh so the UI updates instantly
+        asyncio.sleep(5)
+        # seconds
         await self.coordinator.async_request_refresh()
