@@ -147,10 +147,11 @@ class MitsubishiMinisplit(CoordinatorEntity, ClimateEntity):
             temperature_field = "spCool"
         else:
             return
+        rounded_target_temp = round(target_temp*2)/2
         await self.hass.async_add_executor_job(
             kumo_client.send_device_command,
             self.device_id,
-            {temperature_field: target_temp},
+            {temperature_field: rounded_target_temp},
         )
 
         # If updating master unit, change all other units (if not ignored)
@@ -161,7 +162,7 @@ class MitsubishiMinisplit(CoordinatorEntity, ClimateEntity):
                 await self.hass.async_add_executor_job(
                     kumo_client.send_device_command,
                     id,
-                    {temperature_field: target_temp},
+                    {temperature_field: rounded_target_temp},
                 )
 
         # Force a background data refresh so the UI updates instantly
