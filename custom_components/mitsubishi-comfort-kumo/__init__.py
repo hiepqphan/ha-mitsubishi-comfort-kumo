@@ -28,17 +28,6 @@ SET_ALL_SERVICE_SCHEMA = vol.Schema(
     }
 )
 
-
-def _get_temperature(device: Any) -> float:
-    cool_temp = device.sp_cool
-    heat_temp = device.sp_heat
-    mode = device.mode
-    if mode == "cool":
-        return cool_temp
-    else:
-        return heat_temp
-
-
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up My Cloud Device from a config entry."""
     username = entry.data[CONF_USERNAME]
@@ -70,7 +59,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 result[device.serial] = {
                     "name": device.name,
                     "room_temp": device.room_temp,
-                    "set_temp": _get_temperature(device),
+                    "set_temp": device.set_temp,
                     "mode": device.mode,
                 }
             return result

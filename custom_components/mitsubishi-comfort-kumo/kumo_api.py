@@ -991,22 +991,16 @@ class KumoCloudClient:
             # Default to cooling setpoint or whatever is available
             raw_set_temp = raw_sp_cool or raw_sp_heat
 
-        # Convert to Fahrenheit for display
-        room_temp_f = celsius_to_fahrenheit(raw_room_temp)
-        set_temp_f = celsius_to_fahrenheit(raw_set_temp)
-        sp_cool_f = celsius_to_fahrenheit(raw_sp_cool)
-        sp_heat_f = celsius_to_fahrenheit(raw_sp_heat)
-
         # Get display config for filter/defrost/standby/hotAdjust
         display_config = status_data.get("displayConfig", {})
 
         return DeviceStatus(
             serial=serial,
             name=name,
-            room_temp=room_temp_f,
-            set_temp=set_temp_f,
-            sp_cool=sp_cool_f,
-            sp_heat=sp_heat_f,
+            room_temp=raw_room_temp,
+            set_temp=raw_set_temp,
+            sp_cool=raw_sp_cool,
+            sp_heat=raw_sp_heat,
             mode=mode,
             fan_speed=status_data.get("fanSpeed"),
             air_direction=status_data.get("airDirection"),
