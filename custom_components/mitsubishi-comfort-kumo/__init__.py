@@ -62,7 +62,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                                                         kumo_client.site_id,
                                                         True,
                                                         True)
-            for device in kumo_client.devices:
+            for device in devices:
                 result[device.get("adapter").get("deviceSerial")] = {
                     "name": device.get("name"),
                     "room_temp": device.get("room_temp"),
