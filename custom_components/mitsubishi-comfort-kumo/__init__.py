@@ -30,9 +30,9 @@ SET_ALL_SERVICE_SCHEMA = vol.Schema(
 
 
 def _get_temperature(device: Any) -> float:
-    cool_temp = device.get("sp_cool")
-    heat_temp = device.get("sp_heat")
-    mode = device.get("mode")
+    cool_temp = device.sp_cool
+    heat_temp = device.sp_heat
+    mode = device.mode
     if mode == "cool":
         return cool_temp
     else:
@@ -67,11 +67,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                                                         True)
             _LOGGER.info("Refreshed devices' status.")
             for device in devices:
-                result[device.get("serial")] = {
-                    "name": device.get("name"),
-                    "room_temp": device.get("room_temp"),
+                result[device.serial] = {
+                    "name": device.name,
+                    "room_temp": device.room_temp,
                     "set_temp": _get_temperature(device),
-                    "mode": device.get("mode"),
+                    "mode": device.mode,
                 }
             return result
         except Exception as err:

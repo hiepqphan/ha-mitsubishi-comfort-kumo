@@ -494,7 +494,8 @@ class KumoCloudClient:
 
             return self._sio.connected
         except Exception:
-            self._logger.debug("SocketIO failed to authenticate.")
+            if self._logger != None:
+                self._logger.warning("SocketIO failed to authenticate.")
             self._sio = None
             return False
 
