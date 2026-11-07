@@ -30,18 +30,13 @@ SET_ALL_SERVICE_SCHEMA = vol.Schema(
 
 
 def _get_temperature(device: Any) -> float:
-    adapter = device.get("adapter")
-    cool_temp = adapter.get("spCool")
-    heat_temp = adapter.get("spHeat")
-    mode = adapter.get("operationMode")
-    if mode != "cool" and mode != "heat":
-        mode = adapter.get("previousOperationMode")
+    cool_temp = device.get("sp_cool")
+    heat_temp = device.get("sp_heat")
+    mode = device.get("mode")
     if mode == "cool":
         return cool_temp
-    elif mode == "heat":
-        return heat_temp
     else:
-        return 0.0
+        return heat_temp
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -63,13 +58,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             result = {}
             # Replace with your actual cloud async fetch call
             # Refresh data read
-            await hass.async_add_executor_job(kumo_client.get_fresh_devices)
+            devices = await hass.async_add_executor_job(kumo_client.get_all_devices,
+                                                        kumo_client.site_id,
+                                                        True,
+                                                        True)
             for device in kumo_client.devices:
                 result[device.get("adapter").get("deviceSerial")] = {
                     "name": device.get("name"),
-                    "room_temp": device.get("adapter").get("roomTemp"),
+                    "room_temp": device.get("room_temp"),
                     "set_temp": _get_temperature(device),
-                    "mode": device.get("adapter").get("operationMode"),
+                    "mode": device.get("mode"),
                 }
             return result
         except Exception as err:
