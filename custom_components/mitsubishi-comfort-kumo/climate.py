@@ -125,7 +125,7 @@ class MitsubishiMinisplit(CoordinatorEntity, ClimateEntity):
                 )
 
         # Force a background data refresh so the UI updates instantly
-        await asyncio.sleep(5)
+        await asyncio.sleep(2)
         # seconds
         await self.coordinator.async_request_refresh()
 
@@ -166,6 +166,6 @@ class MitsubishiMinisplit(CoordinatorEntity, ClimateEntity):
                 )
 
         # Force a background data refresh so the UI updates instantly
-        await asyncio.sleep(5)
+        await asyncio.sleep(2)
         # seconds
         await self.coordinator.async_request_refresh()
