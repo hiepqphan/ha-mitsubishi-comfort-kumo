@@ -38,7 +38,7 @@ async def async_setup_entry(
 class MitsubishiMinisplit(CoordinatorEntity, ClimateEntity):
     """Representation of a Mitsubishi Kumo Minisplit unit."""
 
-    _attr_temperature_unit = UnitOfTemperature.CELSIUS
+    _attr_native_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_hvac_modes = [
         HVACMode.COOL,
         HVACMode.HEAT,
@@ -83,12 +83,12 @@ class MitsubishiMinisplit(CoordinatorEntity, ClimateEntity):
         )
 
     @property
-    def current_temperature(self) -> float | None:
+    def native_current_temperature(self) -> float | None:
         """Return the current room temperature."""
         return self._device_data.get("room_temp")
 
     @property
-    def target_temperature(self) -> float | None:
+    def native_target_temperature(self) -> float | None:
         """Return the temperature we want to set."""
         return self._device_data.get("set_temp")
 
