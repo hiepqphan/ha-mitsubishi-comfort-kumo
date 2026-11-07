@@ -260,6 +260,8 @@ class KumoCloudClient:
         )
         self._load_tokens()
 
+        self._logger = None
+
         # Socket.IO client for real-time updates (optional)
         self._sio: "socketio.Client | None" = None
         self._device_updates: dict[str, dict] = {}
@@ -416,7 +418,8 @@ class KumoCloudClient:
 
         return data
 
-    def login_and_fetch_devices(self) -> None:
+    def login_and_fetch_devices(self, logger: any | None = None) -> None:
+        self._logger = logger
         self.login()
         self._load_first_site_id()
         self._load_devices()
@@ -491,6 +494,7 @@ class KumoCloudClient:
 
             return self._sio.connected
         except Exception:
+            self._logger.debug("SocketIO failed to authenticate.")
             self._sio = None
             return False
 
