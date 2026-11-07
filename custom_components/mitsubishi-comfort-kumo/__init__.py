@@ -63,7 +63,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                                                         True,
                                                         True)
             for device in devices:
-                result[device.get("adapter").get("deviceSerial")] = {
+                result[device.get("serial")] = {
                     "name": device.get("name"),
                     "room_temp": device.get("room_temp"),
                     "set_temp": _get_temperature(device),
