@@ -225,8 +225,6 @@ class KumoCloudClient:
         self,
         username: str | None = None,
         password: str | None = None,
-        master_unit_serial: str | None = None,
-        ignored_unit_serials: str | None = None,
         site_id: str | None = None,
         device_serials: dict[str, str] | None = None,
         token_file: Path | None = None,
@@ -247,8 +245,6 @@ class KumoCloudClient:
         self.password = password
         self.site_id = site_id
         self.device_serials = device_serials
-        self.master_unit_serial = master_unit_serial or ""
-        self.ignored_unit_serials = set((ignored_unit_serials or "").split(","))
         self.devices = None
         self.token_file = token_file or TOKEN_FILE
         self.tokens: TokenInfo | None = None
