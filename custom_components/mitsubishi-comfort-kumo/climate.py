@@ -39,6 +39,8 @@ class MitsubishiMinisplit(CoordinatorEntity, ClimateEntity):
     """Representation of a Mitsubishi Kumo Minisplit unit."""
 
     _attr_native_temperature_unit = UnitOfTemperature.CELSIUS
+    _attr_min_temp = 18
+    _attr_max_temp = 25
     _attr_hvac_modes = [
         HVACMode.COOL,
         HVACMode.HEAT,
